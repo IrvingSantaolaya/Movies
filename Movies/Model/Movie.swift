@@ -16,5 +16,5 @@ struct Movie: Codable {
     var poster_path: String?
     var vote_average: Double?
     var description: String?
-    
+    var average: String?
 }

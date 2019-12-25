@@ -36,7 +36,7 @@
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6TA-7q-eEM" userLabel="Movie Image View">
                                                     <rect key="frame" x="0.0" y="0.0" width="106" height="150"/>
                                                 </imageView>
-                                                <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Y1J-CI-2lw">
+                                                <visualEffectView opaque="NO" alpha="0.90000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Y1J-CI-2lw">
                                                     <rect key="frame" x="0.0" y="110" width="106" height="40"/>
                                                     <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="DBj-dA-9bZ">
                                                         <rect key="frame" x="0.0" y="0.0" width="106" height="40"/>

@@ -10,7 +10,7 @@ import UIKit
 
 class CurrentMoviesViewController: UIViewController {
     
-    // MARK - Properties
+    // MARK: - Properties
     @IBOutlet weak var currentMovieCollectionView: UICollectionView!
     var movies = [Movie]()
     var pageNumber = 1
@@ -25,7 +25,7 @@ class CurrentMoviesViewController: UIViewController {
         initialFetch()
     }
     
-    // MARK - Helper Functions
+    // MARK: - Helper Functions
     func updateUI() {
         currentMovieCollectionView.delegate = self
         currentMovieCollectionView.dataSource = self
@@ -46,7 +46,7 @@ class CurrentMoviesViewController: UIViewController {
     }
 }
 
-// MARK: - CollectionView Delegate/ Datasource
+// MARK: - CollectionView Delegate/ Datasource Methods
 extension CurrentMoviesViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -64,7 +64,9 @@ extension CurrentMoviesViewController: UICollectionViewDelegate, UICollectionVie
         if (indexPath.row == movies.count - 1 ) {
             dataLoading = true
             networkManager.fetchMovies(withPageNumber: String(pageNumber)) { (movies, error) in
-                self.pageNumber += 1
+                if self.pageNumber < 60 {
+                    self.pageNumber += 1
+                }
                 guard let movies = movies, error == nil else {
                     #warning("SHOW ALERT")
                     return
@@ -119,6 +121,7 @@ extension CurrentMoviesViewController {
                 return
             }
             cell.movieCellImageView.image = UIImage(data: data)
+                // Fade in image
             UIView.animate(withDuration: 0.6, delay: 0, options: .curveEaseOut, animations: {
                 cell.movieCellImageView.alpha = 1
             }, completion: nil)
