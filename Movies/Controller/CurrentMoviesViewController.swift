@@ -9,35 +9,37 @@
 import UIKit
 
 class CurrentMoviesViewController: UIViewController {
-
+    
     // MARK - Properties
     @IBOutlet weak var currentMovieCollectionView: UICollectionView!
     var movies = [Movie]()
     var pageNumber = 1
+    var prefetchBarrier = 4
     var dataLoading = false
     let networkManager = NetworkManager()
     
     // MARK: - Init
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         updateUI()
-        networkCall()
+        initialFetch()
     }
-
-        // MARK - Helper Functions
-
+    
+    // MARK - Helper Functions
     func updateUI() {
         currentMovieCollectionView.delegate = self
         currentMovieCollectionView.dataSource = self
     }
     
-    func networkCall() {
+    func initialFetch() {
+        dataLoading = true
         networkManager.fetchMovies(withPageNumber: String(pageNumber)) { (movies, error) in
             guard let movies = movies, error == nil else {
-                #warning("ALERT MESSAGE")
+                self.dataLoading = false
+                #warning("SHOW ALERT")
                 return
             }
+            self.dataLoading = false
             self.movies.append(contentsOf: movies)
             self.currentMovieCollectionView.reloadData()
         }
@@ -52,84 +54,61 @@ extension CurrentMoviesViewController: UICollectionViewDelegate, UICollectionVie
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.cellIdentifier, for: indexPath) as! CurrentMovieCell
-        
-        self.collectionView(collectionView, willDisplay: cell, forItemAt: indexPath)
+        let movie = movies[indexPath.item]
+        displayMovie(movie, cell: cell)
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        
-        guard let cell = cell as? CurrentMovieCell else { return }
-        let movie = movies[indexPath.item]
-
-//        if indexPath.row == movies.count - 2 {
-//            
-//            while pageNumber < 10 {
-//                pageNumber += 1
-//                networkManager.fetchMovies(withPageNumber: String(pageNumber)) { (movies, error) in
-//                    guard let movies = movies, error == nil else {
-//                        #warning("SHOW ALERT")
-//                        return
-//                    }
-//                    self.movies.append(contentsOf: movies)
-//                    print(self.movies.count)
-//                    collectionView.reloadData()
-//                }
-//            }
-//            
-//        }
-        displayMovie(movie, cell: cell)
+        if (indexPath.row == movies.count - 1 ) {
+            dataLoading = true
+            networkManager.fetchMovies(withPageNumber: String(pageNumber)) { (movies, error) in
+                self.pageNumber += 1
+                guard let movies = movies, error == nil else {
+                    #warning("SHOW ALERT")
+                    return
+                }
+                self.movies.append(contentsOf: movies)
+                let indexPathsToReload = self.calculateIndexPathsToReload(from: movies)
+                self.onFetchCompleted(with: indexPathsToReload)
+            }
+        }
     }
-    
 }
 
-// MARK: - Networking
+// MARK: - CollectionView Helpers
 extension CurrentMoviesViewController {
     
     func displayMovie(_ movie: Movie, cell: CurrentMovieCell) {
-        
         // Set the label and imageView to invisible
         cell.movieCellLabel.alpha = 0
         cell.movieCellImageView.alpha = 0
         
         // Fade in label
         UIView.animate(withDuration: 0.6, delay: 0, options: .curveEaseOut, animations: {
-            
             cell.movieCellLabel.alpha = 1
-            
         }, completion: nil)
         
-        // Clear the imageview in case the cell is being reused
+        // Clear the imageview in case the cell is being reused and reassign
         cell.movieCellImageView.image = nil
-        
-        // Hold the reference to the movie
         cell.movieToDisplay = movie
-        
-        // Display the title
         cell.movieCellLabel.text = cell.movieToDisplay?.title
         
-        // Check if movie has an image
-        
         if cell.movieToDisplay?.poster_path == nil {
-            
             return
         }
         
+        // Check cache manager
         let urlString = Constants.cellBasePath + cell.movieToDisplay!.poster_path!
-        // Check if the image is stored inside cache using urlString
         let cachedData = CacheManager.retrieveImageData(urlString)
         
         if cachedData != nil {
-            // If the cached data exists then use it instead
             cell.movieCellImageView.image = UIImage(data: cachedData!)
             
             // Fade in image
             UIView.animate(withDuration: 0.6, delay: 0, options: .curveEaseOut, animations: {
-                
                 cell.movieCellImageView.alpha = 1
-                
             }, completion: nil)
             return
         }
@@ -139,16 +118,35 @@ extension CurrentMoviesViewController {
                 #warning("SHOW ALERT")
                 return
             }
-            
             cell.movieCellImageView.image = UIImage(data: data)
             UIView.animate(withDuration: 0.6, delay: 0, options: .curveEaseOut, animations: {
                 cell.movieCellImageView.alpha = 1
             }, completion: nil)
-            
         }
-        
+    }
+    private func calculateIndexPathsToReload(from newMovies: [Movie]) -> [IndexPath] {
+        let startIndex = movies.count - newMovies.count
+        let endIndex = startIndex + newMovies.count
+        return (startIndex..<endIndex).map { IndexPath(item: $0, section: 0) }
     }
     
+    func visibleIndexPathsToReload(intersecting indexPaths: [IndexPath]) -> [IndexPath] {
+        let indexPathsForVisibleItems = currentMovieCollectionView.indexPathsForVisibleItems
+        let indexPathsIntersection = Set(indexPathsForVisibleItems).intersection(indexPaths)
+        return Array(indexPathsIntersection)
+    }
+    
+    func onFetchCompleted(with newIndexPathsToReload: [IndexPath]?) {
+        // 1
+        guard let newIndexPathsToReload = newIndexPathsToReload else {
+            currentMovieCollectionView.isHidden = false
+            currentMovieCollectionView.reloadData()
+            return
+        }
+        // 2
+        let indexPathsToReload = visibleIndexPathsToReload(intersecting: newIndexPathsToReload)
+        currentMovieCollectionView.reloadItems(at: indexPathsToReload)
+    }
 }
 
 
