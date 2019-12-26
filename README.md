@@ -13,4 +13,6 @@ This app uses The Movie Database to show current movies, along with their rating
 
 ### Screen shots
 <img src="Demo/movies1.PNG" alt="drawing" width="200"/> <img src="Demo/movies2.PNG" alt="drawing" width="200"/>
+### Demo
+<img src="Demo/movies3.gif" alt="drawing" width="220"/>
 
