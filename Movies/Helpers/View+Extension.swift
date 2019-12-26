@@ -11,13 +11,14 @@ import UIKit
 // Extension for constraining views with less code
 extension UIView {
     
+    // Simple center view in superview
     func center(inView view: UIView) {
         self.translatesAutoresizingMaskIntoConstraints = false
         self.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         self.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
     }
     
-    func anchor(top: NSLayoutYAxisAnchor?, left: NSLayoutXAxisAnchor?, bottom: NSLayoutYAxisAnchor?, right: NSLayoutXAxisAnchor?,  paddingTop: CGFloat = 0, paddingLeft: CGFloat = 0, paddingBottom: CGFloat = 0, paddingRight: CGFloat = 0, width: CGFloat = 0, height: CGFloat = 0) {
+    func anchorTo(top: NSLayoutYAxisAnchor?, left: NSLayoutXAxisAnchor?, bottom: NSLayoutYAxisAnchor?, right: NSLayoutXAxisAnchor?,  paddingTop: CGFloat = 0, paddingLeft: CGFloat = 0, paddingBottom: CGFloat = 0, paddingRight: CGFloat = 0, width: CGFloat = 0, height: CGFloat = 0) {
         
         translatesAutoresizingMaskIntoConstraints = false
         

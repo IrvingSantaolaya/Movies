@@ -15,6 +15,8 @@ struct Movie: Codable {
     var backdrop_path: String?
     var poster_path: String?
     var vote_average: Double?
-    var description: String?
-    var average: String?
+    var vote_count: Double?
+    var popularity: Double?
+    var overview: String?
+    var release_date: String?
 }

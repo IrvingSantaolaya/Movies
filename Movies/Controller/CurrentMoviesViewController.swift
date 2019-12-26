@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  Movies
 //
-//  Created by Irving Martinez on 2/24/19.
+//  Created by Irving Martinez on 12/23/19.
 //  Copyright © 2019 Irving Martinez. All rights reserved.
 //
 
@@ -76,6 +76,17 @@ extension CurrentMoviesViewController: UICollectionViewDelegate, UICollectionVie
                 self.onFetchCompleted(with: indexPathsToReload)
             }
         }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedMovie = movies[indexPath.item]
+        guard let posterPath = selectedMovie.poster_path else { return }
+        guard let posterData = CacheManager.retrieveImageData(Constants.cellBasePath + posterPath) else { return }
+        let movieDetailVC = MovieDetailViewController()
+        movieDetailVC.movie = selectedMovie
+        movieDetailVC.moviePoster = UIImage(data: posterData)
+        
+        present(movieDetailVC, animated: true, completion: nil)
     }
 }
 
